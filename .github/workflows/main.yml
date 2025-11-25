@@ -1,0 +1,51 @@
+name: CI/CD Pipeline
+
+# 1. The Trigger
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main" ]
+
+# 2. The Jobs
+jobs:
+  # JOB A: Quality Control (The CI part)
+  test-and-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install Dependencies
+        run: |
+          pip install flake8
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Run Linter (Check for sloppy code)
+        run: |
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+
+  # JOB B: The Builder (The CD part)
+  build-container:
+    needs: test-and-lint  
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build and Export
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: false 
+          tags: my-app:latest
+          cache-from: type=gha 
+          cache-to: type=gha,mode=max
