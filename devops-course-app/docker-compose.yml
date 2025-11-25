@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  backend-app:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - REDIS_HOST=db_redis
+    depends_on:
+      - db_redis
+    volumes:
+      - .:/app
+
+  db_redis:
+    image: "redis:alpine"
+    ports:
+      - "6379:6379"
