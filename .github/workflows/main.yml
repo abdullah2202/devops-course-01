@@ -44,7 +44,7 @@ jobs:
       - name: Build and Export
         uses: docker/build-push-action@v4
         with:
-          context: docker-course-app
+          context: ./docker-course-app
           push: false 
           tags: my-app:latest
           cache-from: type=gha 
